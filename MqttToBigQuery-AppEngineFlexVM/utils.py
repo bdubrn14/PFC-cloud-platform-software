@@ -90,7 +90,7 @@ def makeBQEnvVarRowList( valueDict, deviceId, rowsList, idKey ):
 
     row = ( ID.format( varName, 
         time.strftime( '%FT%XZ', time.gmtime() )), # id column
-        values ) # values column (no X or Y)
+        values, 0, 0 ) # values column, with zero for X, Y
 
     rowsList.append( row )
 
@@ -557,16 +557,13 @@ def bq_data_insert( BQ, pydict, deviceId, PROJECT, DATASET, TABLE ):
         rowList = []
         if not makeBQRowList( pydict, deviceId, rowList ):
             return False
-        rows_to_insert = []
-        for row in rowList:
-            rows_to_insert.append( row )
-        logging.info( "bq insert rows: %s" % ( rows_to_insert ))
+        logging.info( "bq insert rows: {}".format( rowList ))
 
         dataset_ref = BQ.dataset( DATASET, project=PROJECT )
         table_ref = dataset_ref.table( TABLE )
         table = BQ.get_table( table_ref )               
 
-        response = BQ.insert_rows( table, rows_to_insert )
+        response = BQ.insert_rows( table, rowList )
         logging.info( 'bq response: {}'.format( response ))
 
 #debugrob: I need to look up the the User in the Datastore by deviceId, and find their openag flag (or role), to know the correct DATASET to write to.

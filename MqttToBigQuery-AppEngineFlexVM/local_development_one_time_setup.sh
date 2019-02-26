@@ -11,7 +11,7 @@ fi
 #sudo pip install --upgrade virtualenv
 
 rm -fr pyenv
-virtualenv --python python3 pyenv
+python3.6 -m venv pyenv
 source pyenv/bin/activate
 
 pip install --upgrade google-cloud-pubsub

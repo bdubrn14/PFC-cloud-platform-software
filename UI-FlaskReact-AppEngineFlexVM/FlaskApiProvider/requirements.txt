@@ -79,11 +79,8 @@ requests==2.20.0
 requests-oauthlib==1.0.0
 rsa==3.4.2
 six==1.11.0
-tensorboard==1.8.0
-tensorflow==1.8.0
-tensorflow-tensorboard==1.5.1
 termcolor==1.1.0
-tweepy==3.6.0
+tweepy==3.7.0
 uritemplate==3.0.0
 urllib3==1.23
 virtualenv==16.0.0
