@@ -114,6 +114,8 @@ class login extends Component {
                     let user_uuid = responseJson["user_uuid"]
                     this.props.cookies.set('user_token',responseJson['user_token'])
                     this.props.cookies.set('is_admin',responseJson['is_admin'])
+//debugrob:
+                    this.props.cookies.set('username', this.state.username)
                     var new_href = "/home?uu="+(user_uuid).toString()
                     if( typeof this.state.vcode != 'undefined') {
                         new_href += "?vcode=" + this.state.vcode;

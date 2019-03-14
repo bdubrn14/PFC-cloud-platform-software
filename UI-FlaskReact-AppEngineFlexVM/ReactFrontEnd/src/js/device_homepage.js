@@ -81,6 +81,9 @@ class DeviceHomepage extends Component {
             current_rh: "Loading",
             current_temp: "Loading",
             current_co2: "Loading",
+            top_temp: "Loading",
+            middle_temp: "Loading",
+            bottom_temp: "Loading",
             sensor_co2: 60,
             sensor_temp: 60,
             sensor_rh: 60,
@@ -102,6 +105,15 @@ class DeviceHomepage extends Component {
             rh_data_y: [],
             led_data: [],
             temp_data: [],
+            top_temp_data_x: [],
+            top_temp_data_y: [],
+            top_temp_data: [],
+            middle_temp_data_x: [],
+            middle_temp_data_y: [],
+            middle_temp_data: [],
+            bottom_temp_data_x: [],
+            bottom_temp_data_y: [],
+            bottom_temp_data: [],
             leaf_count_results_data: [],
             temp_layout: {title: '', width: 1, height: 1},
             led_layout: {title: '', width: 1, height: 1},
@@ -125,7 +137,8 @@ class DeviceHomepage extends Component {
             control_level: 'view',
             current_recipe: {},
             edit_mode: false,
-            selectedAction: 'Select an action'
+            selectedAction: 'Select an action',
+            BCC: false,
         };
         this.child = {
             console: Console
@@ -349,7 +362,11 @@ class DeviceHomepage extends Component {
     }
 
     componentDidMount() {
-        this.getUserDevices()
+        this.getUserDevices();
+        // Show a special page for the BCC user
+        if (this.props.cookies.get('username') === 'BCC') {
+            this.setState({BCC: true})
+        }
     }
 
     LEDPanelChange(led_data_type, color_channel, value) {
@@ -357,10 +374,10 @@ class DeviceHomepage extends Component {
         if (led_data_type === "led_panel_dac5578") {
             let color_json = this.state['led_panel_dac5578'];
             color_json[color_channel] = value;
-            this.setState({led_panel_dac5578: color_json})
+            this.setState({led_panel_dac5578: color_json});
             this.changes['led_panel_dac5578'][color_channel] = value;
-            // this.setState({["led_on_border"]: "3px solid #883c63"})
-            this.setState({changes: this.changes})
+            // this.setState({["led_on_border"]: "3px solid #883c63"});
+            this.setState({changes: this.changes});
         }
 
     }
@@ -412,6 +429,10 @@ class DeviceHomepage extends Component {
                     this.setState({current_temp: responseJson["results"]["current_temp"]})
                     this.setState({current_rh: responseJson["results"]["current_rh"]})
                     this.setState({current_co2: responseJson["results"]["current_co2"]})
+                    this.setState({top_temp: responseJson["results"]["top_h2o_temp"]})
+                    this.setState({middle_temp: responseJson["results"]["middle_h2o_temp"]})
+                    this.setState({bottom_temp: responseJson["results"]["bottom_h2o_temp"]})
+
                     this.statecopy = this.state;
                 }
 
@@ -713,6 +734,9 @@ class DeviceHomepage extends Component {
 
                     let tempData = responseJson["results"]["temp"]
                     let RHData = responseJson["results"]["RH"]
+                    let topTempData = responseJson["results"]["top_h2o_temp"]
+                    let middleTempData = responseJson["results"]["middle_h2o_temp"]
+                    let bottomTempData = responseJson["results"]["bottom_h2o_temp"]
 
                     tempData.forEach(function (d) {
                         d.value = parseFloat(d.value);
@@ -720,6 +744,16 @@ class DeviceHomepage extends Component {
                     RHData.forEach(function (d) {
                         d.value = parseFloat(d.value)
                     });
+                    topTempData.forEach(function (d) {
+                        d.value = parseFloat(d.value);
+                    });
+                    middleTempData.forEach(function (d) {
+                        d.value = parseFloat(d.value);
+                    });
+                    bottomTempData.forEach(function (d) {
+                        d.value = parseFloat(d.value);
+                    });
+
                     let rh_data_x = []
                     let rh_data_y = []
                     RHData.forEach(function (d) {
@@ -775,6 +809,64 @@ class DeviceHomepage extends Component {
                             line: {color: '#008BC2'}
                         }]
                     });
+
+                    let top_temp_data_x = []
+                    let top_temp_data_y = []
+                    topTempData.forEach(function (d) {
+                        top_temp_data_x.push(d.time);
+                        top_temp_data_y.push(d.value);
+                    });
+                    this.setState({'top_temp_data_x': top_temp_data_x})
+                    this.setState({'top_temp_data_y': top_temp_data_y})
+                    this.setState({
+                        'top_temp_data': [{
+                            type: "scatter",
+                            mode: "lines+markers",
+                            name: '',
+                            x: top_temp_data_x,
+                            y: top_temp_data_y,
+                            line: {color: '#008BC2'}
+                        }]
+                    });
+
+                    let middle_temp_data_x = []
+                    let middle_temp_data_y = []
+                    middleTempData.forEach(function (d) {
+                        middle_temp_data_x.push(d.time);
+                        middle_temp_data_y.push(d.value);
+                    });
+                    this.setState({'middle_temp_data_x': middle_temp_data_x})
+                    this.setState({'middle_temp_data_y': middle_temp_data_y})
+                    this.setState({
+                        'middle_temp_data': [{
+                            type: "scatter",
+                            mode: "lines+markers",
+                            name: '',
+                            x: middle_temp_data_x,
+                            y: middle_temp_data_y,
+                            line: {color: '#008BC2'}
+                        }]
+                    });
+
+                    let bottom_temp_data_x = []
+                    let bottom_temp_data_y = []
+                    bottomTempData.forEach(function (d) {
+                        bottom_temp_data_x.push(d.time);
+                        bottom_temp_data_y.push(d.value);
+                    });
+                    this.setState({'bottom_temp_data_x': bottom_temp_data_x})
+                    this.setState({'bottom_temp_data_y': bottom_temp_data_y})
+                    this.setState({
+                        'bottom_temp_data': [{
+                            type: "scatter",
+                            mode: "lines+markers",
+                            name: '',
+                            x: bottom_temp_data_x,
+                            y: bottom_temp_data_y,
+                            line: {color: '#008BC2'}
+                        }]
+                    });
+
                     this.setState({
                         'temp_layout': {
                             width: 350,
@@ -953,6 +1045,7 @@ class DeviceHomepage extends Component {
         const margin = {top: 20, right: 20, bottom: 30, left: 50};
         let changesList = []
         let changeJson = this.state.changes;
+
         if (this.state.changes) {
             changesList = Object.keys(changeJson).map(function (keyName, keyIndex) {
 
@@ -989,6 +1082,8 @@ class DeviceHomepage extends Component {
                             onAddAccessCode={this.toggleAccessCodeModal}
                         />
                     </div>
+
+                    {/* TODO: make this stuff work
                     <div className="col-md-7">
                         <Dropdown isOpen={this.state.action_isOpen} toggle={this.toggle_action_drop}>
                             <DropdownToggle caret>
@@ -1004,6 +1099,7 @@ class DeviceHomepage extends Component {
                             </DropdownMenu>
                         </Dropdown>
                     </div>
+                    */}
 
                     <div className="col-md-1">
                     </div>
@@ -1016,7 +1112,7 @@ class DeviceHomepage extends Component {
                     <div className="col-md-4">
                         <div className="card current-stats-card">
                             <div className="card-block">
-                                <h4 className="card-title "> Temperature </h4>
+                                <h4 className="card-title "> Air Temperature </h4>
                                 <div className="card-text">
                                     <div className="graph">
                                         <div className="knob_data">{this.state.current_temp}
@@ -1043,8 +1139,8 @@ class DeviceHomepage extends Component {
                             </div>
                         </div>
                     </div>
-                    {/*</Draggable>*/}
-                    {/*<Draggable cancel="strong">*/}
+
+                    {this.state.BCC ? null :
                     <div className="col-md-4">
                         <div className="card current-stats-card">
                             <div className="card-block">
@@ -1059,7 +1155,7 @@ class DeviceHomepage extends Component {
                             </div>
                         </div>
                     </div>
-                    {/*</Draggable>*/}
+                    }
                 </div>
 
 
@@ -1068,7 +1164,7 @@ class DeviceHomepage extends Component {
                     <div className="col-md-4">
                         <div className="card value-card">
                             <div className="card-block">
-                                <h4 className="card-title "> Temperature </h4>
+                                <h4 className="card-title "> Air Temperature </h4>
                                 <div className="row plot-row" style={{display: 'block'}}>
                                     <strong className="no-cursor"> <Plot data={this.state.temp_data}
                                                                          layout={this.state.temp_layout}
@@ -1100,6 +1196,7 @@ class DeviceHomepage extends Component {
                         </div>
                     </div>
 
+                    {this.state.BCC ? null :
                     <div className="col-md-4">
                         <div className="card value-card">
                             <div className="card-block">
@@ -1116,9 +1213,102 @@ class DeviceHomepage extends Component {
                             </div>
                         </div>
                     </div>
-                    {/*</Draggable>*/}
+                    }
                 </div>
 
+                {this.state.BCC ? <div>
+                <div className="row graphs-row">
+                    <div className="col-md-4">
+                        <div className="card current-stats-card">
+                            <div className="card-block">
+                                <h4 className="card-title "> Top H2O Temperature </h4>
+                                <div className="card-text">
+                                    <div className="graph">
+                                        <div className="knob_data">{this.state.top_temp}
+                                        </div>
+                                        <span className="txt_smaller"><sup>o</sup>C (Celsius) </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div className="col-md-4">
+                        <div className="card current-stats-card">
+                            <div className="card-block">
+                                <h4 className="card-title "> Middle H2O Temperature </h4>
+                                <div className="card-text">
+                                    <div className="graph">
+                                        <div className="knob_data">{this.state.middle_temp}
+                                        </div>
+                                        <span className="txt_smaller"><sup>o</sup>C (Celsius) </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div className="col-md-4">
+                        <div className="card current-stats-card">
+                            <div className="card-block">
+                                <h4 className="card-title "> Bottom H2O Temperature </h4>
+                                <div className="card-text">
+                                    <div className="graph">
+                                        <div className="knob_data">{this.state.bottom_temp}
+                                        </div>
+                                        <span className="txt_smaller"><sup>o</sup>C (Celsius) </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div className="row graphs-row">
+                    <div className="col-md-4">
+                        <div className="card value-card">
+                            <div className="card-block">
+                                <h4 className="card-title "> Top H2O Temperature </h4>
+                                <div className="row plot-row" style={{display: 'block'}}>
+                                    <strong className="no-cursor"> <Plot data={this.state.top_temp_data}
+                                                                         layout={this.state.temp_layout}
+                                                                         onInitialized={(figure) => this.setState(figure)}
+                                                                         onUpdate={(figure) => this.setState(figure)}/>
+                                    </strong>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div className="col-md-4">
+                        <div className="card value-card">
+                            <div className="card-block">
+                                <h4 className="card-title "> Middle H2O Temperature </h4>
+
+                                <div className="row plot-row" style={{display: 'block'}}>
+                                    <strong className="no-cursor"> <Plot data={this.state.middle_temp_data}
+                                                                         layout={this.state.temp_layout}
+                                                                         onInitialized={(figure) => this.setState(figure)}
+                                                                         onUpdate={(figure) => this.setState(figure)}/>
+                                    </strong>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div className="col-md-4">
+                        <div className="card value-card">
+                            <div className="card-block">
+                                <h4 className="card-title "> Bottom H2O Temperature </h4>
+
+                                <div className="row plot-row" style={{display: 'block'}}>
+                                    <strong className="no-cursor"> <Plot data={this.state.bottom_temp_data}
+                                                                         layout={this.state.temp_layout}
+                                                                         onInitialized={(figure) => this.setState(figure)}
+                                                                         onUpdate={(figure) => this.setState(figure)}/>
+                                    </strong>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                </div>
+                : 
                 <div className="row graphs-row">
                     {/*<Draggable cancel="strong">*/}
                     <div className="col-md-4">
@@ -1134,7 +1324,7 @@ class DeviceHomepage extends Component {
                                 </div>
                             </div>
                         </div>
-                    </div>
+                     </div>
                      <div className="col-md-4">
                         <div className="card value-card">
                             <div className="card-block">
@@ -1149,7 +1339,9 @@ class DeviceHomepage extends Component {
                             </div>
                         </div>
                     </div>
-                </div>
+                </div> 
+                }
+
                 {this.state.edit_mode ? <div className="edit-container">
                     <div className="row graphs-row">
                         <div className="col-md-6 edit-text"> Edit Climate Recipe</div>
