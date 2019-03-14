@@ -17,13 +17,18 @@ DS_device_data_KEY = 'DeviceData'
 DS_device_uuid_KEY = 'device_uuid'
 DS_co2_KEY = 'air_carbon_dioxide_ppm'
 DS_rh_KEY = 'air_humidity_percent'
-DS_temp_KEY = 'air_temperature_celcius'
+DS_temp_misspelled_KEY = 'air_temperature_celcius'
+DS_temp_KEY = 'air_temperature_celsius' 
 DS_led_KEY = 'light_spectrum_nm_percent'
-# debugrob: write getter funcs for the 4 below (currently not used)
+# for fermentabot
+DS_top_h2o_temp_KEY = 'top_tray_temperature_celsius' 
+DS_middle_h2o_temp_KEY = 'middle_tray_temperature_celsius' 
+DS_bottom_h2o_temp_KEY = 'bottom_tray_temperature_celsius' 
+# TODO: write getter funcs for the 4 below (currently not used)
 DS_led_dist_KEY = 'light_illumination_distance_cm'
 DS_led_intensity_KEY = 'light_intensity_watts'
 DS_boot_KEY = 'boot'
-DS_status_KEY = 'status'  # not written by device yet debugrob
+DS_status_KEY = 'status'  
 
 
 # NOTE: The XX_from_BQ() methods are only used if there is no data found
@@ -217,18 +222,25 @@ def get_led_panel_history(device_uuid):
 def get_temp_and_humidity_history(device_uuid):
     humidity_array = []
     temp_array = []
+    top_h20_temp_array = []
+    middle_h20_temp_array = []
+    bottom_h20_temp_array = []
     result_json = {
         'RH': humidity_array,
-        'temp': temp_array
+        'temp': temp_array,
+        'top_h2o_temp': top_h20_temp_array,
+        'middle_h2o_temp': middle_h20_temp_array,
+        'bottom_h2o_temp': bottom_h20_temp_array,
     }
     if device_uuid is None or device_uuid is 'None':
         return result_json
 
-        # First, try to get the data from the datastore...
+    # First, try to get the data from the datastore...
     device_data = get_by_key(DS_device_data_KEY, device_uuid)
     if device_data is None or \
-            (DS_temp_KEY not in device_data and \
-                         DS_rh_KEY not in device_data):
+            ((DS_temp_KEY not in device_data or \
+              DS_temp_misspelled_KEY not in device_data) and \
+             DS_rh_KEY not in device_data):
         # If we didn't find any data in the DS, look in BQ...
         return get_temp_and_humidity_history_from_BQ(device_uuid)
 
@@ -241,6 +253,12 @@ def get_temp_and_humidity_history(device_uuid):
             ts = _bytes_to_string(val['timestamp'])
             value = _bytes_to_string(val['value'])
             result_json["temp"].append({'value': value, 'time': ts})
+    elif DS_temp_misspelled_KEY in device_data:
+        valuesList = device_data[DS_temp_misspelled_KEY]
+        for val in valuesList:
+            ts = _bytes_to_string(val['timestamp'])
+            value = _bytes_to_string(val['value'])
+            result_json["temp"].append({'value': value, 'time': ts})
 
     # Get RH values
     if DS_rh_KEY in device_data:
@@ -249,6 +267,28 @@ def get_temp_and_humidity_history(device_uuid):
             ts = _bytes_to_string(val['timestamp'])
             value = _bytes_to_string(val['value'])
             result_json["RH"].append({'value': value, 'time': ts})
+
+    # Get the 3 water temp values if they exist
+    if DS_top_h2o_temp_KEY in device_data:
+        valuesList = device_data[DS_top_h2o_temp_KEY]
+        for val in valuesList:
+            ts = _bytes_to_string(val['timestamp'])
+            value = _bytes_to_string(val['value'])
+            result_json["top_h2o_temp"].append({'value': value, 'time': ts})
+
+    if DS_middle_h2o_temp_KEY in device_data:
+        valuesList = device_data[DS_middle_h2o_temp_KEY]
+        for val in valuesList:
+            ts = _bytes_to_string(val['timestamp'])
+            value = _bytes_to_string(val['value'])
+            result_json["middle_h2o_temp"].append({'value': value, 'time': ts})
+
+    if DS_bottom_h2o_temp_KEY in device_data:
+        valuesList = device_data[DS_bottom_h2o_temp_KEY]
+        for val in valuesList:
+            ts = _bytes_to_string(val['timestamp'])
+            value = _bytes_to_string(val['value'])
+            result_json["bottom_h2o_temp"].append({'value': value, 'time': ts})
 
     return result_json
 
@@ -286,7 +326,7 @@ def get_current_CO2_value(device_uuid):
 
 
 # ------------------------------------------------------------------------------
-# Get the current temp value for this device.
+# Get the current air temp value for this device.
 # Returns a float or None.
 def get_current_temp_value(device_uuid):
     # First: look in the Datastore Device data dict...
@@ -294,9 +334,26 @@ def get_current_temp_value(device_uuid):
     if result is not None:
         return result
 
+    # Also look for the old misspelled name
+    result = get_current_float_value_from_DS(DS_temp_misspelled_KEY, device_uuid)
+    if result is not None:
+        return result
+
     # Second: do a big (slow) query
     return get_current_float_value_from_BQ(
         queries.fetch_current_temperature_value, device_uuid)
+
+# ------------------------------------------------------------------------------
+# Get the current top H2O temp value for this device (Fermentabot).
+# Returns a float or None.
+def get_current_top_h2o_temp_value(device_uuid):
+    return get_current_float_value_from_DS(DS_top_h2o_temp_KEY, device_uuid)
+
+def get_current_middle_h2o_temp_value(device_uuid):
+    return get_current_float_value_from_DS(DS_middle_h2o_temp_KEY, device_uuid)
+
+def get_current_bottom_h2o_temp_value(device_uuid):
+    return get_current_float_value_from_DS(DS_bottom_h2o_temp_KEY, device_uuid)
 
 
 # ------------------------------------------------------------------------------

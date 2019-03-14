@@ -235,16 +235,10 @@ class MyPFC extends Component {
                     </div>
                 </div>
                 <div className="row peripheral-row">
-
-
                     {listPeripherals}
-
                 </div>
                  <div className="row graph-row">
-
-
                     {listGraphs}
-
                 </div>
             </div>
         )
