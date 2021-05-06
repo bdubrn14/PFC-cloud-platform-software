@@ -11,7 +11,7 @@ dnspython==1.15.0
 dnspython3==1.15.0
 firebase-admin==2.11.0
 Flask==1.0.2
-Flask-Cors==3.0.6
+Flask-Cors==3.0.9
 future==0.16.0
 gapic-google-cloud-datastore-v1==0.90.4
 gapic-google-cloud-error-reporting-v1beta1==0.15.3
