@@ -43,7 +43,7 @@
     "html-webpack-plugin": "2.29.0",
     "jest": "20.0.4",
     "jquery": "^3.3.1",
-    "node-sass": "^4.9.0",
+    "node-sass": "^7.0.0",
     "object-assign": "4.1.1",
     "plotly.js": "^1.36.1",
     "postcss-flexbugs-fixes": "3.2.0",
@@ -85,7 +85,7 @@
     "test": "node scripts/test.js --env=jsdom"
   },
   "devDependencies": {
-    "node-sass": "^4.9.0",
+    "node-sass": "^7.0.0",
     "sass-loader": "^7.0.3"
   },
   "jest": {
